@@ -1,85 +1,51 @@
 import os
 import time
 import random
-import asyncio
 import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
-import nodriver as uc
 
-# ─────────────────────────────────────────
-# TELEGRAM AYARLARI (değiştirme)
-# ─────────────────────────────────────────
+# --- KULLANICI AYARLARI ---
 TELEGRAM_TOKEN = "8752514015:AAH1iWVgJnnpwQQun_fQ0CFDHyL0yDCDAT8"
 CHAT_ID = "5316219134"
 
-# ─────────────────────────────────────────
-# HEPSİEMLAK URL'LERİ (değiştirme)
-# ─────────────────────────────────────────
+# Takip ettiğin Hepsiemlak arama linklerin
 HEPSIEMLAK_URLLER = [
     "https://www.hepsiemlak.com/tepebasi/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p63=180402-180404-180403&p32=11500&p33=1",
     "https://www.hepsiemlak.com/tepebasi-sahibinden/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p63=180402-180404-180403&p32=13500&p33=1"
 ]
 
-# ─────────────────────────────────────────
-# EMLAKJET URL'LERİ (değiştirme)
-# ─────────────────────────────────────────
+# Takip ettiğin Emlakjet arama linklerin
 EMLAKJET_URLLER = [
     "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi/sahibinden?filtreler=max-fiyat=13500&oda-sayisi=1-1,15-1,2-0,3-0&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200",
     "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi?filtreler=max-fiyat=11500&oda-sayisi=1-1,15-1,2-0,3-0&esya-durumu=esyali&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200"
 ]
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SAHİBİNDEN URL'LERİ
-#
-# Nasıl oluşturulur:
-#   1. Sahibinden.com'a gir
-#   2. Kiralık daire seç
-#   3. Şehir, ilçe, mahalle, fiyat, oda sayısı gibi filtrelerini ayarla
-#   4. Arama yaptıktan sonra tarayıcının adres çubuğundaki URL'yi kopyala
-#   5. Aşağıdaki listeye ekle
-#
-# Birden fazla arama yapmak istersen yeni satır ekle, örnek:
-#   "https://www.sahibinden.com/kiralik-daire/eskisehir-tepebasi?...",
-#   "https://www.sahibinden.com/kiralik-daire/eskisehir-odunpazari?...",
-# ─────────────────────────────────────────────────────────────────────────────
-SAHIBINDEN_URLLER = [
-    "https://www.sahibinden.com/kiralik-daire/sahibinden?address_quarter=17940&address_quarter=17939&address_quarter=17948&address_quarter=17941&address_quarter=17942&address_town=330&a20=38473&a20=1259450&a20=1206094&a20=1213206&price_max=13500&address_city=26", 
-    "https://www.sahibinden.com/kiralik-daire?a103713=true&address_quarter=17948&address_district=1494&address_town=330&a20=38470&a20=38473&a20=1259450&a20=1206094&a20=1213206&price_max=11500&address_city=26"
-]
-
-# ─────────────────────────────────────────
-# HAFIZA DOSYASI (değiştirme)
-# ─────────────────────────────────────────
+# --- BULUT HAFIZA SİSTEMİ ---
 HAFIZA_DOSYASI = "hafiza.txt"
-
 if not os.path.exists(HAFIZA_DOSYASI):
     open(HAFIZA_DOSYASI, 'w').close()
 
 with open(HAFIZA_DOSYASI, "r") as f:
     gorulen_ilanlar = set(f.read().splitlines())
 
+# Eğer hafıza dosyası ilk defa oluşuyorsa sessiz modda çalış (eski ilanları bota yığma)
 ILK_TARAMA_MI = len(gorulen_ilanlar) == 0
 
-
-# ─────────────────────────────────────────
-# TELEGRAM
-# ─────────────────────────────────────────
 def telegram_mesaj_gonder(mesaj):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "Markdown"}
-    try:
+    try: 
         requests.post(url, json=payload)
-    except:
+    except: 
         pass
 
-
-# ─────────────────────────────────────────
-# HEPSİEMLAK & EMLAKJET (değişmedi)
-# ─────────────────────────────────────────
 def sayfayi_guvenli_getir(browser, url):
-    context = browser.new_context(viewport={"width": 1920, "height": 1080})
+    context = browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        viewport={"width": 1920, "height": 1080}
+    )
     page = context.new_page()
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=30000)
@@ -93,122 +59,57 @@ def sayfayi_guvenli_getir(browser, url):
         context.close()
         return None
 
-
 def hepsiemlak_tara(browser, url):
     html = sayfayi_guvenli_getir(browser, url)
-    if not html:
-        return
+    if not html: return
     soup = BeautifulSoup(html, 'html.parser')
-    ilanlar = soup.find_all('li', class_='listing-item')
+    ilanlar = soup.find_all('li', class_='listing-item') 
+    
     for ilan in ilanlar:
         link_el = ilan.find('a')
-        if not link_el or not link_el.has_attr('href'):
-            continue
+        if not link_el or not link_el.has_attr('href'): continue
+        
         link = "https://www.hepsiemlak.com" + link_el['href']
         ilan_id = link.split('-')[-1]
-        if not ilan_id.isdigit():
-            continue
+        if not ilan_id.isdigit(): continue 
+        
         if ilan_id not in gorulen_ilanlar:
             gorulen_ilanlar.add(ilan_id)
             with open(HAFIZA_DOSYASI, "a") as f:
                 f.write(ilan_id + "\n")
             if not ILK_TARAMA_MI:
                 title = link_el.get('title', 'Hepsiemlak İlanı')
-                telegram_mesaj_gonder(f"❤️ **[Hepsiemlak]**\n\n🏠 {title}\n🔗 [İlanı İncele]({link})")
-
+                telegram_mesaj_gonder(f"❤️ **[Hepsiemlak] Yeni İlan!**\n\n🏠 {title}\n🔗 [İlanı İncele]({link})")
 
 def emlakjet_tara(browser, url):
     html = sayfayi_guvenli_getir(browser, url)
-    if not html:
-        return
+    if not html: return
     soup = BeautifulSoup(html, 'html.parser')
     tum_linkler = soup.find_all('a', href=True)
+    
     for a in tum_linkler:
         href = a['href']
-        if "/ilan/" in href and "-ilani-" not in href:
+        if "/ilan/" in href and "-ilani-" not in href: 
             ilan_id = href.split('-')[-1]
-            if not ilan_id.isdigit():
-                continue
+            if not ilan_id.isdigit(): continue
+            
             if ilan_id not in gorulen_ilanlar:
                 gorulen_ilanlar.add(ilan_id)
                 with open(HAFIZA_DOSYASI, "a") as f:
                     f.write(ilan_id + "\n")
                 if not ILK_TARAMA_MI:
                     link = "https://www.emlakjet.com" + href
-                    telegram_mesaj_gonder(f"💚 **[Emlakjet]**\n\n🏠 Yeni Emlakjet İlanı\n🔗 [İlanı İncele]({link})")
+                    telegram_mesaj_gonder(f"💚 **[Emlakjet] Yeni İlan!**\n\n🏠 Kriterlerinize Uygun Yeni İlan Düştü\n🔗 [İlanı İncele]({link})")
 
-
-# ─────────────────────────────────────────
-# SAHİBİNDEN (nodriver ile - ücretsiz)
-# ─────────────────────────────────────────
-async def sahibinden_async_tara(url):
-    browser = await uc.start(headless=True, browser_args=["--no-sandbox", "--disable-setuid-sandbox"])
-    try:
-        page = await browser.get(url)
-        await asyncio.sleep(6)          # Cloudflare challenge için bekle
-        await page.scroll_down(400)
-        await asyncio.sleep(3)
-
-        html = await page.get_content()
-        browser.stop()
-
-        soup = BeautifulSoup(html, 'html.parser')
-        ilanlar = soup.find_all('tr', class_='searchResultsItem')
-
-        for ilan in ilanlar:
-            link_el = ilan.find('a', class_='classifiedTitle')
-            if not link_el or not link_el.has_attr('href'):
-                continue
-            href = link_el['href']
-            ilan_id = href.split('/')[-1].split('?')[0]
-            if not ilan_id.isdigit():
-                continue
-            if ilan_id not in gorulen_ilanlar:
-                gorulen_ilanlar.add(ilan_id)
-                with open(HAFIZA_DOSYASI, "a") as f:
-                    f.write(ilan_id + "\n")
-                if not ILK_TARAMA_MI:
-                    baslik = link_el.get_text(strip=True) or "Sahibinden İlanı"
-                    link = "https://www.sahibinden.com" + href
-                    telegram_mesaj_gonder(
-                        f"🔵 **[Sahibinden]**\n\n🏠 {baslik}\n🔗 [İlanı İncele]({link})"
-                    )
-    except Exception as e:
-        print(f"Sahibinden hata: {e}")
-        try:
-            browser.stop()
-        except:
-            pass
-
-
-def sahibinden_tara_hepsini():
-    if not SAHIBINDEN_URLLER:
-        return
-    async def run():
-        for url in SAHIBINDEN_URLLER:
-            await sahibinden_async_tara(url)
-    asyncio.run(run())
-
-
-# ─────────────────────────────────────────
-# ANA FONKSİYON
-# ─────────────────────────────────────────
 def main():
     stealth = Stealth()
     with stealth.use_sync(sync_playwright()) as p:
         browser = p.chromium.launch(headless=True)
-
         for url in HEPSIEMLAK_URLLER:
             hepsiemlak_tara(browser, url)
-
         for url in EMLAKJET_URLLER:
             emlakjet_tara(browser, url)
-
         browser.close()
-
-    # Sahibinden ayrı çalışır (nodriver kendi Chrome'unu açar)
-    sahibinden_tara_hepsini()
-
 
 if __name__ == "__main__":
     main()
