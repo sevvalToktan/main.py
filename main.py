@@ -76,4 +76,31 @@ def emlakjet_tara(browser, url):
     html = sayfayi_guvenli_getir(browser, url)
     if not html: return
     soup = BeautifulSoup(html, 'html.parser')
-    tum_linkler = soup.find_all('a', href=True
+    tum_linkler = soup.find_all('a', href=True)
+    
+    for a in tum_linkler:
+        href = a['href']
+        if "/ilan/" in href and "-ilani-" not in href: 
+            ilan_id = href.split('-')[-1]
+            if not ilan_id.isdigit(): continue
+            
+            if ilan_id not in gorulen_ilanlar:
+                gorulen_ilanlar.add(ilan_id)
+                with open(HAFIZA_DOSYASI, "a") as f:
+                    f.write(ilan_id + "\n")
+                if not ILK_TARAMA_MI:
+                    link = "https://www.emlakjet.com" + href
+                    telegram_mesaj_gonder(f"💚 **[Emlakjet]**\n\n🏠 Yeni Emlakjet İlanı\n🔗 [İlanı İncele]({link})")
+
+def main():
+    stealth = Stealth()
+    with stealth.use_sync(sync_playwright()) as p:
+        browser = p.chromium.launch(headless=True) # Bulut sunucusunda ekran yoktur
+        for url in HEPSIEMLAK_URLLER:
+            hepsiemlak_tara(browser, url)
+        for url in EMLAKJET_URLLER:
+            emlakjet_tara(browser, url)
+        browser.close()
+
+if __name__ == "__main__":
+    main()
