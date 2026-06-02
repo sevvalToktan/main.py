@@ -1,34 +1,61 @@
-name: Otomatik Emlak Tarama
+name: Emlak Botu
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
+    - cron: "*/15 * * * *"   # Her 15 dakikada bir çalışır
+  workflow_dispatch:          # Elle de başlatılabilir
 
 jobs:
-  tara_ve_kaydet:
+  tara:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Depoyu Kopyala
-      uses: actions/checkout@v4
+      - name: Repoyu çek
+        uses: actions/checkout@v4
 
-    - name: Python 3.11 Kur
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Gerekli Kütüphaneleri Yükle
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests playwright beautifulsoup4 playwright-stealth
-        playwright install --with-deps chromium
+      # nodriver ve playwright için gerekli sistem kütüphaneleri
+      - name: Sistem bağımlılıklarını kur
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            chromium-browser \
+            libglib2.0-0 \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2
 
-    - name: Botu Çalıştır (İlanları Çek)
-      run: python main.py
+      - name: Python paketlerini kur
+        run: pip install playwright playwright-stealth requests beautifulsoup4 nodriver
 
-    - name: Hafızayı Kaydet ve Güncelle
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action Bot"
-        git add hafiza.txt
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Hafıza güncellendi" && git push)
+      - name: Playwright tarayıcısını kur
+        run: playwright install chromium
+
+      - name: Hafıza dosyasını indir (varsa)
+        uses: actions/cache@v4
+        with:
+          path: hafiza.txt
+          key: hafiza-${{ github.run_id }}
+          restore-keys: hafiza-
+
+      - name: Botu çalıştır
+        run: python main.py
+
+      - name: Hafıza dosyasını kaydet
+        uses: actions/cache@v4
+        with:
+          path: hafiza.txt
+          key: hafiza-${{ github.run_id }}
