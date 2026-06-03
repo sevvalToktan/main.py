@@ -12,14 +12,14 @@ CHAT_ID = "5316219134"
 
 # Takip ettiğin Hepsiemlak arama linklerin
 HEPSIEMLAK_URLLER = [
-    "https://www.hepsiemlak.com/tepebasi/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p63=180402-180404-180403&p32=11500&p33=1",
-    "https://www.hepsiemlak.com/tepebasi-sahibinden/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p63=180402-180404-180403&p32=13500&p33=1"
+    "https://www.hepsiemlak.com/tepebasi/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p33=1&sortDirection=DESC&sortField=UPDATED_DATE&p32=11500&p63=180402-180404-180403",
+    "https://www.hepsiemlak.com/tepebasi-sahibinden/konut?districts=tepebasi-bahcelievler-mah,tepebasi-eskibaglar,tepebasi-gulluk,tepebasi-yenibaglar,tepebasi-sutluce-mah&p33=1&sortDirection=DESC&sortField=UPDATED_DATE&p32=13500&p63=180402-180404-180403"
 ]
 
 # Takip ettiğin Emlakjet arama linklerin
 EMLAKJET_URLLER = [
-    "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi/sahibinden?filtreler=max-fiyat=13500&oda-sayisi=1-1,15-1,2-0,3-0&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200",
-    "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi?filtreler=max-fiyat=11500&oda-sayisi=1-1,15-1,2-0,3-0&esya-durumu=esyali&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200"
+    "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi/sahibinden?filtreler=max-fiyat=13500&oda-sayisi=1-1,15-1,2-0,3-0&siralama=4&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200",
+    "https://www.emlakjet.com/kiralik-konut/eskisehir-tepebasi?filtreler=max-fiyat=11500&oda-sayisi=1-1,15-1,2-0,3-0&esya-durumu=esyali&siralama=4&semt=bahcelievler-10001515&mahalle=eskisehir-tepebasi-yenibaglar-mahallesi-130219,eskisehir-tepebasi-eskibaglar-mahallesi-130197,eskisehir-tepebasi-bahcelievler-mahallesi-130191,eskisehir-tepebasi-sutluce-mahallesi-130212,eskisehir-tepebasi-gulluk-mahallesi-130200"
 ]
 
 # --- BULUT HAFIZA SİSTEMİ ---
