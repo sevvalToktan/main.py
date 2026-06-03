@@ -64,6 +64,11 @@ def hepsiemlak_tara(browser, url):
     html = sayfayi_guvenli_getir(browser, url)
     if not html: return
     soup = BeautifulSoup(html, 'html.parser')
+    # --- DEDEKTİF KODU BAŞLANGICI ---
+    print("\n--- HEPSİEMLAK SAYFA RAPORU ---")
+    print("Sayfa Başlığı:", soup.title.text if soup.title else "Başlık Yok")
+    print("-------------------------------\n")
+    # --- DEDEKTİF KODU BİTİŞİ ---
     
     # Sınıf isimlerini tamamen boş verip sayfadaki tüm linkleri tarıyoruz
     tum_linkler = soup.find_all('a', href=True)
